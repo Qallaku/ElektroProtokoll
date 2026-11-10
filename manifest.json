@@ -1,0 +1,16 @@
+{
+  "name": "ElektroProtokoll",
+  "short_name": "ElektroProtokoll",
+  "description": "Prüfprotokoll nach VDE 0100-600 und Kabel-Rechner für Elektriker",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f1ea",
+  "theme_color": "#1c2321",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

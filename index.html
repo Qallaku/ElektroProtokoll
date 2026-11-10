@@ -1,5 +1,17 @@
-<title>Elektro Prüfprotokoll</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ElektroProtokoll</title>
+<meta name="description" content="Prüfprotokoll nach VDE 0100-600 und Kabel-Rechner für Elektriker">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#1c2321">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ElektroProtokoll">
 <style>
 :root{
   /* Layout: single-column form that writes live into a document-style preview below it; phone-first, sections collapse to accordion-style cards */
@@ -118,6 +130,10 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 }
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
 [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
 .segrow{display:flex; gap:8px; margin-bottom:10px}
 .segrow label{
   flex:1; text-align:center; padding:9px; border-radius:7px; border:1px solid var(--line);
@@ -544,4 +560,13 @@ try{
     if(el) el.value = saved[id];
   });
 }catch(e){}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
 </script>
+</body>
+</html>
+
