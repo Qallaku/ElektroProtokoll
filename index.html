@@ -1,14 +1,547 @@
-<!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><title>ElektroProtokoll</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elektro Prüfprotokoll</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <style>
-body{font-family:system-ui,sans-serif;background:#f3f1ea;color:#1c2321;margin:0;padding:40px 20px;text-align:center}
-h1{font-size:24px}p{color:#5b625e;font-size:15px}
-.box{background:#fff;border:1px solid #d8d4c6;border-radius:12px;padding:24px;max-width:400px;margin:40px auto}
-</style></head>
-<body>
-<div class="box">
-<h1>⚡ ElektroProtokoll</h1>
-<p>Faqja është live! Versioni i plotë (me Prüfprotokoll dhe Kabel-Rechner) po vjen tani.</p>
+:root{
+  /* Layout: single-column form that writes live into a document-style preview below it; phone-first, sections collapse to accordion-style cards */
+  --bg:#f3f1ea; --surface:#ffffff; --surface-2:#eceae1; --ink:#1c2321; --ink-dim:#5b625e;
+  --line:#d8d4c6; --accent:#c87a1f; --accent-ink:#5a3610; --ok:#3f7d55; --ok-bg:#e4f0e6;
+  --warn:#b23b2e; --warn-bg:#f7e4e0; --mono:'JetBrains Mono', ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181a; --surface:#1e2224; --surface-2:#262b2d; --ink:#e9e7df; --ink-dim:#a7ada8;
+    --line:#383e3c; --accent:#e2984a; --accent-ink:#2a1a08; --ok:#6fbf86; --ok-bg:#1c2e20;
+    --warn:#e08276; --warn-bg:#331c18; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181a; --surface:#1e2224; --surface-2:#262b2d; --ink:#e9e7df; --ink-dim:#a7ada8;
+  --line:#383e3c; --accent:#e2984a; --accent-ink:#2a1a08; --ok:#6fbf86; --ok-bg:#1c2e20;
+  --warn:#e08276; --warn-bg:#331c18; color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+  padding-bottom:40px;
+}
+h1,h2,h3{font-family:'Space Grotesk',system-ui,sans-serif; font-weight:600; margin:0; text-wrap:balance}
+.wrap{max-width:720px; margin:0 auto}
+header{padding:20px 0 16px; display:flex; align-items:center; gap:12px; border-bottom:2px solid var(--ink)}
+.bolt{width:34px;height:34px;flex:none}
+header h1{font-size:19px; letter-spacing:.01em}
+header p{margin:2px 0 0; font-size:12.5px; color:var(--ink-dim)}
+nav{display:flex; gap:6px; margin:16px 0; overflow-x:auto; -webkit-overflow-scrolling:touch}
+nav button{
+  flex:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600;
+  padding:8px 13px; border-radius:7px; border:1px solid var(--line); background:var(--surface);
+  color:var(--ink-dim); cursor:pointer; letter-spacing:.01em;
+}
+nav button.active{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+section.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:16px 16px 18px; margin-bottom:14px;
+}
+section.card h2{font-size:14.5px; display:flex; align-items:center; gap:8px; margin-bottom:12px}
+section.card h2 .n{
+  font-family:var(--mono); font-size:11px; color:var(--accent-ink); background:var(--accent);
+  width:20px; height:20px; border-radius:5px; display:flex; align-items:center; justify-content:center; flex:none;
+}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.field{display:flex; flex-direction:column; gap:4px; margin-bottom:10px; min-width:0}
+.field label{font-size:11.5px; color:var(--ink-dim); font-weight:600; letter-spacing:.02em}
+.field input, .field select, .field textarea{
+  font-family:inherit; font-size:14px; padding:9px 10px; border-radius:7px;
+  border:1px solid var(--line); background:var(--bg); color:var(--ink); width:100%;
+}
+.field textarea{resize:vertical; min-height:54px}
+.field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--accent); outline-offset:1px}
+.radiorow{display:flex; gap:8px; flex-wrap:wrap}
+.radiorow label{
+  display:flex; align-items:center; gap:6px; font-size:13px; padding:8px 11px;
+  border:1px solid var(--line); border-radius:7px; background:var(--bg); cursor:pointer; flex:1; justify-content:center;
+}
+.radiorow input{accent-color:var(--accent)}
+.checklist{display:flex; flex-direction:column; gap:0}
+.checkitem{
+  display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--line);
+}
+.checkitem:last-child{border-bottom:none}
+.checkitem input{margin-top:3px; width:17px; height:17px; accent-color:var(--ok); flex:none}
+.checkitem span{font-size:13.5px; line-height:1.4}
+.meastable{display:flex; flex-direction:column; gap:10px}
+.measrow{
+  display:grid; grid-template-columns:1fr 92px 54px; gap:8px; align-items:end;
+  padding:10px; background:var(--surface-2); border-radius:8px;
+}
+.measrow .label{grid-column:1/-1; font-size:12.5px; font-weight:600; color:var(--ink)}
+.measrow input{font-family:var(--mono); text-align:right}
+.measrow .unit{font-size:12px; color:var(--ink-dim); align-self:center}
+.hint{font-size:11px; color:var(--ink-dim); margin-top:3px}
+.resultpick{display:flex; gap:8px; margin-bottom:10px}
+.resultpick label{
+  flex:1; text-align:center; padding:12px; border-radius:8px; border:1.5px solid var(--line);
+  font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; cursor:pointer;
+}
+.resultpick input{display:none}
+.resultpick label:has(input:checked)[data-v="ok"]{background:var(--ok-bg); border-color:var(--ok); color:var(--ok)}
+.resultpick label:has(input:checked)[data-v="maengel"]{background:var(--warn-bg); border-color:var(--warn); color:var(--warn)}
+footer-nav{display:flex; gap:10px; margin-top:4px}
+.btn{
+  font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; padding:11px 16px;
+  border-radius:8px; border:1px solid var(--ink); background:var(--ink); color:var(--bg);
+  cursor:pointer; flex:1; text-align:center;
+}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+/* Preview / document view */
+.doc{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px 18px; font-size:13px; line-height:1.55}
+.doc h3{font-size:14.5px; border-bottom:1.5px solid var(--ink); padding-bottom:7px; margin-bottom:10px}
+.doc .docgrid{display:grid; grid-template-columns:1fr 1fr; gap:4px 14px; margin-bottom:16px}
+.doc .docgrid div{display:flex; justify-content:space-between; gap:8px; border-bottom:1px dotted var(--line); padding:3px 0; font-size:12.5px}
+.doc .docgrid b{font-weight:600; color:var(--ink-dim); font-size:11px}
+.doc ul{margin:0; padding-left:18px}
+.doc li{margin-bottom:4px; font-size:12.5px}
+.doc table{width:100%; border-collapse:collapse; margin-top:4px; font-family:var(--mono); font-size:11.5px}
+.doc table td{padding:5px 4px; border-bottom:1px solid var(--line)}
+.doc table td:last-child{text-align:right}
+.badge{display:inline-block; padding:3px 9px; border-radius:5px; font-size:11.5px; font-weight:600; font-family:'Space Grotesk',sans-serif}
+.badge.ok{background:var(--ok-bg); color:var(--ok)}
+.badge.warn{background:var(--warn-bg); color:var(--warn)}
+.sigline{border-top:1px solid var(--ink); margin-top:28px; padding-top:5px; font-size:11px; color:var(--ink-dim); display:flex; justify-content:space-between}
+.toast{
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
+  background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:20px; font-size:12.5px;
+  font-weight:600; transition:all .25s; pointer-events:none; z-index:20;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+.segrow{display:flex; gap:8px; margin-bottom:10px}
+.segrow label{
+  flex:1; text-align:center; padding:9px; border-radius:7px; border:1px solid var(--line);
+  font-size:13px; font-weight:600; cursor:pointer; background:var(--bg);
+}
+.segrow input{display:none}
+.segrow label:has(input:checked){background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.calcresult{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; margin-top:14px}
+.calcresult h3{font-size:13.5px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:10px}
+.stepline{display:flex; justify-content:space-between; gap:10px; font-size:12.5px; padding:5px 0; border-bottom:1px dotted var(--line)}
+.stepline:last-child{border-bottom:none}
+.stepline .f{font-family:var(--mono); color:var(--ink-dim); font-size:11.5px}
+.stepline .v{font-weight:600; font-family:var(--mono)}
+.resultbig{display:flex; gap:10px; margin:14px 0}
+.resultbig .tile{flex:1; background:var(--surface-2); border-radius:8px; padding:12px; text-align:center}
+.resultbig .tile .lbl{font-size:10.5px; color:var(--ink-dim); font-weight:600; text-transform:uppercase; letter-spacing:.03em}
+.resultbig .tile .num{font-family:var(--mono); font-size:19px; font-weight:600; margin-top:3px}
+.notebox{background:var(--warn-bg); color:var(--warn); border-radius:7px; padding:10px 12px; font-size:12px; margin-top:10px; line-height:1.4}
+.disclaimer{font-size:11px; color:var(--ink-dim); margin-top:12px; line-height:1.5; border-top:1px solid var(--line); padding-top:10px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <svg class="bolt" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="var(--accent)" stroke="var(--ink)" stroke-width="1" stroke-linejoin="round"/></svg>
+  <div>
+    <h1>Elektro Prüfprotokoll</h1>
+    <p>Erstprüfung nach DIN VDE 0100-600 — Entwurf</p>
+  </div>
+</header>
+
+<nav>
+  <button class="tabbtn active" data-tab="eingabe">Eingabe</button>
+  <button class="tabbtn" data-tab="vorschau">Protokoll-Vorschau</button>
+  <button class="tabbtn" data-tab="kabel">Kabel-Rechner</button>
+</nav>
+
+<div id="view-eingabe">
+
+<section class="card">
+  <h2><span class="n">1</span>Stammdaten</h2>
+  <div class="grid2">
+    <div class="field"><label for="kunde">Kunde</label><input id="kunde" placeholder="Max Mustermann"></div>
+    <div class="field"><label for="datum">Datum der Prüfung</label><input id="datum" type="date"></div>
+  </div>
+  <div class="field"><label for="adresse">Anlagenanschrift</label><input id="adresse" placeholder="Musterstraße 12, 12345 Musterstadt"></div>
+  <div class="grid2">
+    <div class="field"><label for="pruefer">Prüfer (EFK)</label><input id="pruefer" placeholder="Name der Elektrofachkraft"></div>
+    <div class="field"><label for="firma">Firma</label><input id="firma" placeholder="Firmenname"></div>
+  </div>
+  <div class="field">
+    <label>Prüfart</label>
+    <div class="radiorow">
+      <label><input type="radio" name="art" value="Erstprüfung" checked> Erstprüfung</label>
+      <label><input type="radio" name="art" value="Wiederholungsprüfung"> Wiederholung</label>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="n">2</span>Besichtigung</h2>
+  <div class="checklist" id="besicht"></div>
+</section>
+
+<section class="card">
+  <h2><span class="n">3</span>Erproben &amp; Messen</h2>
+  <div class="meastable" id="messungen"></div>
+</section>
+
+<section class="card">
+  <h2><span class="n">4</span>Ergebnis</h2>
+  <div class="resultpick">
+    <label data-v="ok"><input type="radio" name="ergebnis" value="ok" checked> Bestanden</label>
+    <label data-v="maengel"><input type="radio" name="ergebnis" value="maengel"> Mängel</label>
+  </div>
+  <div class="field"><label for="maengeltxt">Anmerkungen / Mängel</label><textarea id="maengeltxt" placeholder="Falls Mängel: kurz beschreiben…"></textarea></div>
+</section>
+
+<footer-nav>
+  <button class="btn" id="toPreview">Vorschau anzeigen</button>
+</footer-nav>
+
 </div>
-</body></html>
+
+<div id="view-vorschau" hidden>
+  <div class="doc" id="docOut"></div>
+  <footer-nav style="margin-top:14px">
+    <button class="btn ghost" id="toEdit">Zurück zur Eingabe</button>
+    <button class="btn" id="copyBtn">Als Text kopieren</button>
+  </footer-nav>
+</div>
+
+<div id="view-kabel" hidden>
+
+<section class="card">
+  <h2><span class="n">1</span>Ngarkesa &amp; qarku</h2>
+  <div class="field"><label for="k_power">Fuqia (kW)</label><input id="k_power" type="number" step="0.1" placeholder="7.4"></div>
+  <div class="field">
+    <label>Fazat</label>
+    <div class="segrow">
+      <label><input type="radio" name="k_phasen" value="1" checked> 1-fazore (230V)</label>
+      <label><input type="radio" name="k_phasen" value="3"> 3-fazore (400V)</label>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="field"><label for="k_cosphi">cos φ</label><input id="k_cosphi" type="number" step="0.01" value="1"></div>
+    <div class="field"><label for="k_length">Gjatësia e linjës (m)</label><input id="k_length" type="number" step="0.5" placeholder="25"></div>
+  </div>
+  <div class="field">
+    <label>Tipi i qarkut (për limitin e rënies së tensionit)</label>
+    <div class="segrow">
+      <label><input type="radio" name="k_kreistyp" value="licht" checked> Ndriçim (max 3%)</label>
+      <label><input type="radio" name="k_kreistyp" value="kraft"> Fuqi (max 5%)</label>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="n">2</span>Kablloja &amp; instalimi</h2>
+  <div class="field">
+    <label>Materiali</label>
+    <div class="segrow">
+      <label><input type="radio" name="k_material" value="Cu" checked> Bakër (Cu)</label>
+      <label><input type="radio" name="k_material" value="Al"> Alumin (Al)</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="k_verlegeart">Mënyra e instalimit (Verlegeart)</label>
+    <select id="k_verlegeart">
+      <option value="A1">A1 — në tub, brenda murit të izoluar</option>
+      <option value="B1">B1 — kabllo në tub, mbi/në mur</option>
+      <option value="B2" selected>B2 — kabllo në kanal kabllor</option>
+      <option value="C">C — kabllo direkt mbi/në mur</option>
+      <option value="E">E — e lirë në ajër / tabaka kabllore</option>
+    </select>
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <label for="k_temp">Temperatura e ambientit</label>
+      <select id="k_temp">
+        <option value="20">20 °C</option>
+        <option value="25" selected>25 °C</option>
+        <option value="30">30 °C</option>
+        <option value="35">35 °C</option>
+        <option value="40">40 °C</option>
+        <option value="45">45 °C</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="k_gruppe">Qarqe të grupuara bashkë</label>
+      <select id="k_gruppe">
+        <option value="1" selected>1 (pa grupim)</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<footer-nav>
+  <button class="btn" id="calcBtn">Llogarit</button>
+</footer-nav>
+
+<div class="calcresult" id="calcOut" hidden></div>
+
+</div>
+
+</div>
+
+<div class="toast" id="toast">Kopiert</div>
+
+<script>
+const besichtItems = [
+  "Schutz gegen elektrischen Schlag (Abdeckungen, IP-Schutz)",
+  "Vorhandensein von Brandschutzabschottungen",
+  "Auswahl der Leiter für Strombelastbarkeit und Spannungsfall",
+  "Auswahl und Einstellung der Schutz- und Überwachungseinrichtungen",
+  "Vorhandensein geeigneter Trenn- und Schalteinrichtungen",
+  "Auswahl der Betriebsmittel entsprechend äußeren Einflüssen",
+  "Kennzeichnung von Schutzleitern, N-Leitern, Stromkreisen",
+  "Vorhandensein von Schaltplänen, Warnschildern"
+];
+const besichtEl = document.getElementById('besicht');
+besichtItems.forEach((t,i)=>{
+  const row = document.createElement('label');
+  row.className = 'checkitem';
+  row.innerHTML = `<input type="checkbox" id="chk${i}" checked><span>${t}</span>`;
+  besichtEl.appendChild(row);
+});
+
+const measDefs = [
+  {id:'durch', label:'Durchgängigkeit Schutzleiter / Potentialausgleich', unit:'Ω', placeholder:'0.3'},
+  {id:'iso', label:'Isolationswiderstand', unit:'MΩ', placeholder:'>100'},
+  {id:'fi', label:'RCD/FI-Auslösezeit', unit:'ms', placeholder:'<300'},
+  {id:'fistrom', label:'RCD/FI-Auslösestrom', unit:'mA', placeholder:'15'},
+  {id:'schleife', label:'Schleifenimpedanz', unit:'Ω', placeholder:'0.45'},
+  {id:'drehfeld', label:'Drehfeldrichtung (falls 3-phasig)', unit:'', placeholder:'rechts'}
+];
+const measEl = document.getElementById('messungen');
+measDefs.forEach(m=>{
+  const row = document.createElement('div');
+  row.className = 'measrow';
+  row.innerHTML = `<div class="label">${m.label}</div>
+    <input id="m_${m.id}" placeholder="${m.placeholder}">
+    <div class="unit">${m.unit}</div>`;
+  measEl.appendChild(row);
+});
+
+function val(id){ try{ return document.getElementById(id).value.trim(); }catch(e){ return ''; } }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function buildDoc(){
+  const art = document.querySelector('input[name="art"]:checked').value;
+  const ergebnis = document.querySelector('input[name="ergebnis"]:checked').value;
+  const kunde = val('kunde') || '—', adresse = val('adresse') || '—';
+  const datum = val('datum') || '—', pruefer = val('pruefer') || '—', firma = val('firma') || '—';
+
+  let besichtRows = besichtItems.map((t,i)=>{
+    const ok = document.getElementById('chk'+i).checked;
+    return `<li>${ok ? '✓' : '○'} ${esc(t)}</li>`;
+  }).join('');
+
+  let measRows = measDefs.map(m=>{
+    const v = val('m_'+m.id);
+    return `<tr><td>${esc(m.label)}</td><td>${v ? esc(v)+' '+m.unit : '—'}</td></tr>`;
+  }).join('');
+
+  const maengel = val('maengeltxt');
+  const badge = ergebnis === 'ok'
+    ? '<span class="badge ok">Bestanden</span>'
+    : '<span class="badge warn">Mängel festgestellt</span>';
+
+  document.getElementById('docOut').innerHTML = `
+    <h3>Prüfprotokoll — ${esc(art)} nach DIN VDE 0100-600</h3>
+    <div class="docgrid">
+      <div><b>Kunde</b> ${esc(kunde)}</div>
+      <div><b>Datum</b> ${esc(datum)}</div>
+      <div><b>Anlage</b> ${esc(adresse)}</div>
+      <div><b>Prüfer</b> ${esc(pruefer)}</div>
+      <div><b>Firma</b> ${esc(firma)}</div>
+      <div><b>Prüfart</b> ${esc(art)}</div>
+    </div>
+    <h3 style="margin-top:4px">Besichtigung</h3>
+    <ul>${besichtRows}</ul>
+    <h3 style="margin-top:16px">Erproben &amp; Messen</h3>
+    <table>${measRows}</table>
+    <h3 style="margin-top:16px">Ergebnis</h3>
+    <p style="margin:6px 0">${badge}</p>
+    ${maengel ? `<p style="font-size:12.5px"><b>Anmerkungen:</b> ${esc(maengel)}</p>` : ''}
+    <div class="sigline"><span>Unterschrift Prüfer</span><span>Ort, Datum</span></div>
+  `;
+}
+
+function docAsText(){
+  const art = document.querySelector('input[name="art"]:checked').value;
+  const ergebnis = document.querySelector('input[name="ergebnis"]:checked').value === 'ok' ? 'Bestanden' : 'Mängel festgestellt';
+  let t = `PRÜFPROTOKOLL — ${art} nach DIN VDE 0100-600\n\n`;
+  t += `Kunde: ${val('kunde')||'—'}\nAnlage: ${val('adresse')||'—'}\nDatum: ${val('datum')||'—'}\nPrüfer: ${val('pruefer')||'—'}\nFirma: ${val('firma')||'—'}\nPrüfart: ${art}\n\n`;
+  t += `BESICHTIGUNG\n`;
+  besichtItems.forEach((item,i)=>{
+    t += `${document.getElementById('chk'+i).checked ? '[x]' : '[ ]'} ${item}\n`;
+  });
+  t += `\nERPROBEN & MESSEN\n`;
+  measDefs.forEach(m=>{
+    t += `${m.label}: ${val('m_'+m.id) || '—'} ${m.unit}\n`;
+  });
+  t += `\nERGEBNIS: ${ergebnis}\n`;
+  const maengel = val('maengeltxt');
+  if(maengel) t += `Anmerkungen: ${maengel}\n`;
+  return t;
+}
+
+function showTab(tab){
+  ['eingabe','vorschau','kabel'].forEach(t=>{
+    document.getElementById('view-'+t).hidden = (t !== tab);
+  });
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab === tab));
+  if(tab === 'vorschau') buildDoc();
+  window.scrollTo(0,0);
+}
+document.getElementById('toPreview').addEventListener('click', ()=> showTab('vorschau'));
+document.getElementById('toEdit').addEventListener('click', ()=> showTab('eingabe'));
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=> showTab(btn.dataset.tab));
+});
+
+/* ---------- Kabel-Rechner (DIN VDE 0298-4, vereinfacht) ---------- */
+const ampacity = {
+  1.5:{A1:14.5, B1:17.5, B2:16.5, C:22,  E:19},
+  2.5:{A1:19.5, B1:24,   B2:23,   C:29,  E:26},
+  4:  {A1:26,   B1:32,   B2:30,   C:38,  E:34},
+  6:  {A1:34,   B1:41,   B2:38,   C:48,  E:43},
+  10: {A1:46,   B1:57,   B2:52,   C:64,  E:60},
+  16: {A1:61,   B1:76,   B2:69,   C:84,  E:80},
+  25: {A1:80,   B1:101,  B2:90,   C:107, E:101}
+};
+const tempFactor = {20:1.12, 25:1.00, 30:0.94, 35:0.87, 40:0.79, 45:0.71};
+const groupFactor = {1:1.00, 2:0.80, 3:0.70, 4:0.65, 5:0.60, 6:0.57};
+const standardBreakers = [6,10,13,16,20,25,32,40,50,63,80,100];
+const AL_FACTOR = 0.78;
+const KAPPA_CU = 56, KAPPA_AL = 34;
+const verlegeNames = {A1:'A1 (tub, mur i izoluar)', B1:'B1 (tub mbi/në mur)', B2:'B2 (kanal kabllor)', C:'C (direkt mbi/në mur)', E:'E (e lirë në ajër)'};
+
+function fmt(n, d){ return Number(n).toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d}); }
+
+function calcKabel(){
+  const out = document.getElementById('calcOut');
+  const P = parseFloat(val('k_power'));
+  const L = parseFloat(val('k_length'));
+  const cosphi = parseFloat(val('k_cosphi')) || 1;
+  const phasen = document.querySelector('input[name="k_phasen"]:checked').value;
+  const material = document.querySelector('input[name="k_material"]:checked').value;
+  const kreistyp = document.querySelector('input[name="k_kreistyp"]:checked').value;
+  const verlegeart = document.getElementById('k_verlegeart').value;
+  const temp = document.getElementById('k_temp').value;
+  const gruppe = document.getElementById('k_gruppe').value;
+  const U = phasen === '1' ? 230 : 400;
+
+  out.hidden = false;
+  if(!P || P <= 0 || !L || L <= 0){
+    out.innerHTML = '<div class="notebox">Fut fuqinë (kW) dhe gjatësinë e linjës (m) për të vazhduar.</div>';
+    return;
+  }
+
+  const Ib = phasen === '1' ? (P*1000)/(U*cosphi) : (P*1000)/(Math.sqrt(3)*U*cosphi);
+  const fTemp = tempFactor[temp], fGroup = groupFactor[gruppe];
+  const fMaterial = material === 'Al' ? AL_FACTOR : 1;
+  const fTotal = fTemp * fGroup * fMaterial;
+  const limitPct = kreistyp === 'licht' ? 3 : 5;
+  const kappa = material === 'Al' ? KAPPA_AL : KAPPA_CU;
+
+  const sizes = Object.keys(ampacity).map(Number).sort((a,b)=>a-b);
+  let chosen=null, Iz=0, tableVal=0, dUpct=0, note='';
+
+  for(const s of sizes){
+    tableVal = ampacity[s][verlegeart];
+    const izCandidate = tableVal * fTotal;
+    if(izCandidate >= Ib){
+      const dU = phasen === '1' ? (2*L*Ib)/(kappa*s) : (Math.sqrt(3)*L*Ib)/(kappa*s);
+      const pct = (dU/U)*100;
+      if(pct <= limitPct){ chosen = s; Iz = izCandidate; dUpct = pct; break; }
+    }
+  }
+  if(!chosen){
+    const s = sizes[sizes.length-1];
+    tableVal = ampacity[s][verlegeart];
+    Iz = tableVal * fTotal;
+    const dU = phasen === '1' ? (2*L*Ib)/(kappa*s) : (Math.sqrt(3)*L*Ib)/(kappa*s);
+    dUpct = (dU/U)*100;
+    chosen = s;
+    note = 'Edhe me seksionin më të madh të listuar (25 mm²), kushtet (rënia e tensionit ose rryma) mund të jenë ende të tejkaluara. Kontrollo me tabelën e plotë VDE 0298-4 ose shkurto gjatësinë e linjës.';
+  }
+
+  let breaker = null;
+  for(const b of standardBreakers){
+    if(b >= Ib && b <= Iz){ breaker = b; break; }
+  }
+  if(!breaker) note += (note ? ' ' : '') + 'Asnjë siguresë standarde (6–100A) s\'i plotëson automatikisht kushtet Ib ≤ In ≤ Iz — rishiko seksionin ose faktorët e korrigjimit.';
+
+  out.innerHTML = `
+    <h3>Rezultati i llogaritjes</h3>
+    <div class="stepline"><span>Rryma e punës I<sub>b</sub></span><span class="f">${phasen==='1' ? 'P/(U·cosφ)' : 'P/(√3·U·cosφ)'}</span><span class="v">${fmt(Ib,2)} A</span></div>
+    <div class="stepline"><span>Faktor temperaturë (${temp}°C)</span><span></span><span class="v">${fTemp}</span></div>
+    <div class="stepline"><span>Faktor grupimi (${gruppe} qarqe)</span><span></span><span class="v">${fGroup}</span></div>
+    ${material==='Al' ? `<div class="stepline"><span>Faktor materiali (Al, përafrues)</span><span></span><span class="v">${AL_FACTOR}</span></div>` : ''}
+    <div class="stepline"><span>Kapaciteti tabelor (${chosen} mm², ${verlegeNames[verlegeart]})</span><span></span><span class="v">${tableVal} A</span></div>
+    <div class="resultbig">
+      <div class="tile"><div class="lbl">Seksioni</div><div class="num">${chosen} mm²</div></div>
+      <div class="tile"><div class="lbl">I<sub>z</sub> (korrigjuar)</div><div class="num">${fmt(Iz,1)} A</div></div>
+      <div class="tile"><div class="lbl">Rënia tensionit</div><div class="num">${fmt(dUpct,2)}%</div></div>
+    </div>
+    <div class="stepline"><span>Siguresa e rekomanduar</span><span class="f">I<sub>b</sub> ≤ I<sub>n</sub> ≤ I<sub>z</sub></span><span class="v">${breaker ? 'B'+breaker+' / C'+breaker : '—'}</span></div>
+    <div class="stepline"><span>Limit rënie tensioni (${kreistyp==='licht'?'ndriçim':'fuqi'})</span><span></span><span class="v">≤ ${limitPct}%</span></div>
+    ${note ? `<div class="notebox">${note}</div>` : ''}
+    <div class="disclaimer">Llogaritje e thjeshtuar bazuar në DIN VDE 0298-4 (kushte referuese: izolim PVC, 3 përçues të ngarkuar). Faktori i aluminit është përafrues. Rezultati është orientues — verifikoje gjithmonë me tabelën e plotë VDE 0298-4 dhe VDE 0100-430 përpara zbatimit praktik.</div>
+  `;
+}
+document.getElementById('calcBtn').addEventListener('click', calcKabel);
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  const text = docAsText();
+  const toast = document.getElementById('toast');
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(e2){}
+    document.body.removeChild(ta);
+  }
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 1600);
+});
+
+// restore draft from localStorage (per-viewer convenience only)
+try{
+  const saved = JSON.parse(localStorage.getItem('pp_draft') || '{}');
+  Object.keys(saved).forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && el.tagName !== 'INPUT' || (el && el.type !== 'radio' && el.type !== 'checkbox')){
+      if(el) el.value = saved[id];
+    }
+  });
+}catch(e){}
+function saveDraft(){
+  try{
+    const data = {};
+    ['kunde','datum','adresse','pruefer','firma','maengeltxt'].forEach(id=>{
+      data[id] = val(id);
+    });
+    measDefs.forEach(m=>{ data['m_'+m.id] = val('m_'+m.id); });
+    localStorage.setItem('pp_draft', JSON.stringify(data));
+  }catch(e){}
+}
+document.querySelectorAll('input, textarea').forEach(el=>{
+  el.addEventListener('input', saveDraft);
+});
+try{
+  const saved = JSON.parse(localStorage.getItem('pp_draft') || '{}');
+  Object.keys(saved).forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = saved[id];
+  });
+}catch(e){}
+</script>
