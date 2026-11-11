@@ -175,7 +175,10 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 .authrow{display:flex; gap:8px; margin-top:10px}
 .authrow .btn{flex:1}
 .userbar{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0 2px; font-size:11.5px; color:var(--ink-dim)}
-.userbar button{background:none; border:none; color:var(--ink-dim); text-decoration:underline; font-size:11.5px; cursor:pointer; padding:4px}
+.userbar #logoutBtn{background:none; border:none; color:var(--ink-dim); text-decoration:underline; font-size:11.5px; cursor:pointer; padding:4px}
+.userbar #subscribeBtn{background:var(--accent); color:var(--accent-ink); border:none; border-radius:20px; font-size:11px; font-weight:600; padding:6px 12px; cursor:pointer; font-family:'Space Grotesk',sans-serif}
+#planBadge.pro{background:var(--ok-bg); color:var(--ok); border-radius:20px; padding:4px 10px; font-size:11px; font-weight:600}
+#planBadge.free{background:var(--surface-2); color:var(--ink-dim); border-radius:20px; padding:4px 10px; font-size:11px}
 .spin{display:inline-block; width:13px; height:13px; border:2px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin .7s linear infinite; vertical-align:-2px; margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
@@ -203,7 +206,14 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
     <p>Erstprüfung nach DIN VDE 0100-600 — Entwurf</p>
   </div>
 </header>
-<div class="userbar"><span id="userEmailLbl"></span><button id="logoutBtn">Dil</button></div>
+<div class="userbar">
+  <span id="userEmailLbl"></span>
+  <span style="display:flex; gap:10px; align-items:center">
+    <span id="planBadge"></span>
+    <button id="subscribeBtn" hidden>Abonohu — 14,99€/muaj</button>
+    <button id="logoutBtn">Dil</button>
+  </span>
+</div>
 
 <nav>
   <button class="tabbtn active" data-tab="eingabe">Eingabe</button>
@@ -707,6 +717,49 @@ const SUPABASE_KEY = 'sb_publishable_LtgR712rBlYn2pXD9QT8bg_Szzy8jVa';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let historyCache = [];
+let subscriptionStatus = 'free';
+const FREE_LIMIT = 3;
+
+async function refreshPlanUI(){
+  const badge = document.getElementById('planBadge');
+  const subBtn = document.getElementById('subscribeBtn');
+  if(!currentUser){ badge.textContent=''; badge.className=''; subBtn.hidden = true; return; }
+  const { data } = await sb.from('profiles').select('subscription_status').eq('id', currentUser.id).maybeSingle();
+  subscriptionStatus = (data && data.subscription_status) || 'free';
+  const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trialing';
+  badge.textContent = isPro ? 'Pro' : 'Falas';
+  badge.className = isPro ? 'pro' : 'free';
+  subBtn.hidden = isPro;
+}
+document.getElementById('subscribeBtn').addEventListener('click', async ()=>{
+  if(!currentUser) return;
+  const btn = document.getElementById('subscribeBtn');
+  btn.disabled = true; btn.textContent = 'Duke hapur…';
+  try{
+    const resp = await fetch('/api/create-checkout-session', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ userId: currentUser.id, email: currentUser.email })
+    });
+    const data = await resp.json();
+    if(data.url){ window.location.href = data.url; }
+    else { showToast('Gabim: ' + (data.error || 'provo përsëri')); btn.disabled=false; btn.textContent='Abonohu — 14,99€/muaj'; }
+  }catch(e){
+    showToast('Gabim gjatë hapjes së pagesës');
+    btn.disabled=false; btn.textContent='Abonohu — 14,99€/muaj';
+  }
+});
+(function handleCheckoutRedirect(){
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get('checkout');
+  if(status === 'success'){ showToast('Faleminderit! Abonimi po aktivizohet…'); }
+  else if(status === 'cancel'){ showToast('Pagesa u anulua'); }
+  if(status){
+    const url = new URL(window.location.href);
+    url.searchParams.delete('checkout');
+    window.history.replaceState({}, '', url.toString());
+  }
+})();
 
 function authMsg(text, kind){
   const el = document.getElementById('authMsg');
@@ -737,13 +790,17 @@ sb.auth.onAuthStateChange((event, session)=>{
   document.getElementById('appRoot').hidden = !currentUser;
   if(currentUser){
     document.getElementById('userEmailLbl').textContent = currentUser.email || '';
+    refreshPlanUI();
   }
 });
 sb.auth.getSession().then(({ data })=>{
   currentUser = data.session ? data.session.user : null;
   document.getElementById('authView').hidden = !!currentUser;
   document.getElementById('appRoot').hidden = !currentUser;
-  if(currentUser) document.getElementById('userEmailLbl').textContent = currentUser.email || '';
+  if(currentUser){
+    document.getElementById('userEmailLbl').textContent = currentUser.email || '';
+    refreshPlanUI();
+  }
 });
 
 function collectRecord(){
@@ -761,6 +818,18 @@ function collectRecord(){
 }
 document.getElementById('saveHistBtn').addEventListener('click', async ()=>{
   if(!currentUser){ showToast('Duhet të jesh i kyçur'); return; }
+  const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trialing';
+  if(!isPro){
+    const { count, error: countErr } = await sb
+      .from('protocols')
+      .select('id', { count:'exact', head:true })
+      .eq('user_id', currentUser.id);
+    if(!countErr && typeof count === 'number' && count >= FREE_LIMIT){
+      showToast(`Limiti falas (${FREE_LIMIT}) u arrit — abonohu për ma shumë`);
+      document.getElementById('subscribeBtn').hidden = false;
+      return;
+    }
+  }
   const { error } = await sb.from('protocols').insert(collectRecord());
   if(error){ showToast('Gabim: s\'u ruajt'); return; }
   showToast('U ruajt në Verlauf');

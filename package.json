@@ -1,0 +1,10 @@
+{
+  "name": "elektroprotokoll",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ElektroProtokoll - VDE 0100-600 Pruefprotokoll + Kabel-Rechner",
+  "dependencies": {
+    "stripe": "^16.9.0",
+    "@supabase/supabase-js": "^2.45.4"
+  }
+}
