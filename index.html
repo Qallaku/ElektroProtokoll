@@ -186,13 +186,13 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 <div id="authView">
   <div class="authcard">
     <h1><svg class="bolt" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="var(--accent)" stroke="var(--ink)" stroke-width="1" stroke-linejoin="round"/></svg>ElektroProtokoll</h1>
-    <p class="sub">Hyr ose krijo llogari për të ruajtur protokollet në cloud</p>
+    <p class="sub">Anmelden oder registrieren, um Protokolle in der Cloud zu speichern</p>
     <div class="authmsg" id="authMsg"></div>
-    <div class="field"><label for="authEmail">Email</label><input id="authEmail" type="email" placeholder="emri@firma.de" autocomplete="email"></div>
-    <div class="field"><label for="authPass">Fjalëkalimi</label><input id="authPass" type="password" placeholder="min. 6 shenja" autocomplete="current-password"></div>
+    <div class="field"><label for="authEmail">E-Mail</label><input id="authEmail" type="email" placeholder="name@firma.de" autocomplete="email"></div>
+    <div class="field"><label for="authPass">Passwort</label><input id="authPass" type="password" placeholder="mind. 6 Zeichen" autocomplete="current-password"></div>
     <div class="authrow">
-      <button class="btn ghost" id="authSignupBtn">Regjistrohu</button>
-      <button class="btn" id="authLoginBtn">Hyr</button>
+      <button class="btn ghost" id="authSignupBtn">Registrieren</button>
+      <button class="btn" id="authLoginBtn">Anmelden</button>
     </div>
   </div>
 </div>
@@ -210,8 +210,8 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
   <span id="userEmailLbl"></span>
   <span style="display:flex; gap:10px; align-items:center">
     <span id="planBadge"></span>
-    <button id="subscribeBtn" hidden>Abonohu — 14,99€/muaj</button>
-    <button id="logoutBtn">Dil</button>
+    <button id="subscribeBtn" hidden>Abonnieren — 14,99€/Monat</button>
+    <button id="logoutBtn">Abmelden</button>
   </span>
 </div>
 
@@ -283,50 +283,50 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 <div id="view-kabel" hidden>
 
 <section class="card">
-  <h2><span class="n">1</span>Ngarkesa &amp; qarku</h2>
-  <div class="field"><label for="k_power">Fuqia (kW)</label><input id="k_power" type="number" step="0.1" placeholder="7.4"></div>
+  <h2><span class="n">1</span>Last &amp; Stromkreis</h2>
+  <div class="field"><label for="k_power">Leistung (kW)</label><input id="k_power" type="number" step="0.1" placeholder="7.4"></div>
   <div class="field">
-    <label>Fazat</label>
+    <label>Phasen</label>
     <div class="segrow">
-      <label><input type="radio" name="k_phasen" value="1" checked> 1-fazore (230V)</label>
-      <label><input type="radio" name="k_phasen" value="3"> 3-fazore (400V)</label>
+      <label><input type="radio" name="k_phasen" value="1" checked> 1-phasig (230V)</label>
+      <label><input type="radio" name="k_phasen" value="3"> 3-phasig (400V)</label>
     </div>
   </div>
   <div class="grid2">
     <div class="field"><label for="k_cosphi">cos φ</label><input id="k_cosphi" type="number" step="0.01" value="1"></div>
-    <div class="field"><label for="k_length">Gjatësia e linjës (m)</label><input id="k_length" type="number" step="0.5" placeholder="25"></div>
+    <div class="field"><label for="k_length">Leitungslänge (m)</label><input id="k_length" type="number" step="0.5" placeholder="25"></div>
   </div>
   <div class="field">
-    <label>Tipi i qarkut (për limitin e rënies së tensionit)</label>
+    <label>Stromkreistyp (für Spannungsfall-Grenzwert)</label>
     <div class="segrow">
-      <label><input type="radio" name="k_kreistyp" value="licht" checked> Ndriçim (max 3%)</label>
-      <label><input type="radio" name="k_kreistyp" value="kraft"> Fuqi (max 5%)</label>
+      <label><input type="radio" name="k_kreistyp" value="licht" checked> Beleuchtung (max 3%)</label>
+      <label><input type="radio" name="k_kreistyp" value="kraft"> Kraft (max 5%)</label>
     </div>
   </div>
 </section>
 
 <section class="card">
-  <h2><span class="n">2</span>Kablloja &amp; instalimi</h2>
+  <h2><span class="n">2</span>Kabel &amp; Verlegung</h2>
   <div class="field">
-    <label>Materiali</label>
+    <label>Material</label>
     <div class="segrow">
-      <label><input type="radio" name="k_material" value="Cu" checked> Bakër (Cu)</label>
-      <label><input type="radio" name="k_material" value="Al"> Alumin (Al)</label>
+      <label><input type="radio" name="k_material" value="Cu" checked> Kupfer (Cu)</label>
+      <label><input type="radio" name="k_material" value="Al"> Aluminium (Al)</label>
     </div>
   </div>
   <div class="field">
-    <label for="k_verlegeart">Mënyra e instalimit (Verlegeart)</label>
+    <label for="k_verlegeart">Verlegeart</label>
     <select id="k_verlegeart">
-      <option value="A1">A1 — në tub, brenda murit të izoluar</option>
-      <option value="B1">B1 — kabllo në tub, mbi/në mur</option>
-      <option value="B2" selected>B2 — kabllo në kanal kabllor</option>
-      <option value="C">C — kabllo direkt mbi/në mur</option>
-      <option value="E">E — e lirë në ajër / tabaka kabllore</option>
+      <option value="A1">A1 — im Rohr, in wärmegedämmter Wand</option>
+      <option value="B1">B1 — Kabel im Rohr, auf/in Wand</option>
+      <option value="B2" selected>B2 — Kabel im Kabelkanal</option>
+      <option value="C">C — Kabel direkt auf/in Wand</option>
+      <option value="E">E — frei in Luft / Kabelpritsche</option>
     </select>
   </div>
   <div class="grid2">
     <div class="field">
-      <label for="k_temp">Temperatura e ambientit</label>
+      <label for="k_temp">Umgebungstemperatur</label>
       <select id="k_temp">
         <option value="20">20 °C</option>
         <option value="25" selected>25 °C</option>
@@ -337,9 +337,9 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
       </select>
     </div>
     <div class="field">
-      <label for="k_gruppe">Qarqe të grupuara bashkë</label>
+      <label for="k_gruppe">Zusammen verlegte Stromkreise</label>
       <select id="k_gruppe">
-        <option value="1" selected>1 (pa grupim)</option>
+        <option value="1" selected>1 (keine Häufung)</option>
         <option value="2">2</option>
         <option value="3">3</option>
         <option value="4">4</option>
@@ -351,7 +351,7 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 </section>
 
 <footer-nav>
-  <button class="btn" id="calcBtn">Llogarit</button>
+  <button class="btn" id="calcBtn">Berechnen</button>
 </footer-nav>
 
 <div class="calcresult" id="calcOut" hidden></div>
@@ -499,7 +499,7 @@ const groupFactor = {1:1.00, 2:0.80, 3:0.70, 4:0.65, 5:0.60, 6:0.57};
 const standardBreakers = [6,10,13,16,20,25,32,40,50,63,80,100];
 const AL_FACTOR = 0.78;
 const KAPPA_CU = 56, KAPPA_AL = 34;
-const verlegeNames = {A1:'A1 (tub, mur i izoluar)', B1:'B1 (tub mbi/në mur)', B2:'B2 (kanal kabllor)', C:'C (direkt mbi/në mur)', E:'E (e lirë në ajër)'};
+const verlegeNames = {A1:'A1 (Rohr, gedämmte Wand)', B1:'B1 (Rohr auf/in Wand)', B2:'B2 (Kabelkanal)', C:'C (direkt auf/in Wand)', E:'E (frei in Luft)'};
 
 function fmt(n, d){ return Number(n).toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d}); }
 
@@ -518,7 +518,7 @@ function calcKabel(){
 
   out.hidden = false;
   if(!P || P <= 0 || !L || L <= 0){
-    out.innerHTML = '<div class="notebox">Fut fuqinë (kW) dhe gjatësinë e linjës (m) për të vazhduar.</div>';
+    out.innerHTML = '<div class="notebox">Bitte Leistung (kW) und Leitungslänge (m) eingeben.</div>';
     return;
   }
 
@@ -548,31 +548,31 @@ function calcKabel(){
     const dU = phasen === '1' ? (2*L*Ib)/(kappa*s) : (Math.sqrt(3)*L*Ib)/(kappa*s);
     dUpct = (dU/U)*100;
     chosen = s;
-    note = 'Edhe me seksionin më të madh të listuar (25 mm²), kushtet (rënia e tensionit ose rryma) mund të jenë ende të tejkaluara. Kontrollo me tabelën e plotë VDE 0298-4 ose shkurto gjatësinë e linjës.';
+    note = 'Auch mit dem größten gelisteten Querschnitt (25 mm²) können die Bedingungen (Spannungsfall oder Strom) noch überschritten sein. Vollständige Tabelle VDE 0298-4 prüfen oder Leitungslänge verkürzen.';
   }
 
   let breaker = null;
   for(const b of standardBreakers){
     if(b >= Ib && b <= Iz){ breaker = b; break; }
   }
-  if(!breaker) note += (note ? ' ' : '') + 'Asnjë siguresë standarde (6–100A) s\'i plotëson automatikisht kushtet Ib ≤ In ≤ Iz — rishiko seksionin ose faktorët e korrigjimit.';
+  if(!breaker) note += (note ? ' ' : '') + 'Keine Standardsicherung (6–100A) erfüllt automatisch die Bedingung Ib ≤ In ≤ Iz — Querschnitt oder Korrekturfaktoren prüfen.';
 
   out.innerHTML = `
-    <h3>Rezultati i llogaritjes</h3>
-    <div class="stepline"><span>Rryma e punës I<sub>b</sub></span><span class="f">${phasen==='1' ? 'P/(U·cosφ)' : 'P/(√3·U·cosφ)'}</span><span class="v">${fmt(Ib,2)} A</span></div>
-    <div class="stepline"><span>Faktor temperaturë (${temp}°C)</span><span></span><span class="v">${fTemp}</span></div>
-    <div class="stepline"><span>Faktor grupimi (${gruppe} qarqe)</span><span></span><span class="v">${fGroup}</span></div>
-    ${material==='Al' ? `<div class="stepline"><span>Faktor materiali (Al, përafrues)</span><span></span><span class="v">${AL_FACTOR}</span></div>` : ''}
-    <div class="stepline"><span>Kapaciteti tabelor (${chosen} mm², ${verlegeNames[verlegeart]})</span><span></span><span class="v">${tableVal} A</span></div>
+    <h3>Berechnungsergebnis</h3>
+    <div class="stepline"><span>Betriebsstrom I<sub>b</sub></span><span class="f">${phasen==='1' ? 'P/(U·cosφ)' : 'P/(√3·U·cosφ)'}</span><span class="v">${fmt(Ib,2)} A</span></div>
+    <div class="stepline"><span>Temperaturfaktor (${temp}°C)</span><span></span><span class="v">${fTemp}</span></div>
+    <div class="stepline"><span>Häufungsfaktor (${gruppe} Stromkreise)</span><span></span><span class="v">${fGroup}</span></div>
+    ${material==='Al' ? `<div class="stepline"><span>Materialfaktor (Al, näherungsweise)</span><span></span><span class="v">${AL_FACTOR}</span></div>` : ''}
+    <div class="stepline"><span>Tabellenwert (${chosen} mm², ${verlegeNames[verlegeart]})</span><span></span><span class="v">${tableVal} A</span></div>
     <div class="resultbig">
-      <div class="tile"><div class="lbl">Seksioni</div><div class="num">${chosen} mm²</div></div>
-      <div class="tile"><div class="lbl">I<sub>z</sub> (korrigjuar)</div><div class="num">${fmt(Iz,1)} A</div></div>
-      <div class="tile"><div class="lbl">Rënia tensionit</div><div class="num">${fmt(dUpct,2)}%</div></div>
+      <div class="tile"><div class="lbl">Querschnitt</div><div class="num">${chosen} mm²</div></div>
+      <div class="tile"><div class="lbl">I<sub>z</sub> (korrigiert)</div><div class="num">${fmt(Iz,1)} A</div></div>
+      <div class="tile"><div class="lbl">Spannungsfall</div><div class="num">${fmt(dUpct,2)}%</div></div>
     </div>
-    <div class="stepline"><span>Siguresa e rekomanduar</span><span class="f">I<sub>b</sub> ≤ I<sub>n</sub> ≤ I<sub>z</sub></span><span class="v">${breaker ? 'B'+breaker+' / C'+breaker : '—'}</span></div>
-    <div class="stepline"><span>Limit rënie tensioni (${kreistyp==='licht'?'ndriçim':'fuqi'})</span><span></span><span class="v">≤ ${limitPct}%</span></div>
+    <div class="stepline"><span>Empfohlene Sicherung</span><span class="f">I<sub>b</sub> ≤ I<sub>n</sub> ≤ I<sub>z</sub></span><span class="v">${breaker ? 'B'+breaker+' / C'+breaker : '—'}</span></div>
+    <div class="stepline"><span>Grenzwert Spannungsfall (${kreistyp==='licht'?'Beleuchtung':'Kraft'})</span><span></span><span class="v">≤ ${limitPct}%</span></div>
     ${note ? `<div class="notebox">${note}</div>` : ''}
-    <div class="disclaimer">Llogaritje e thjeshtuar bazuar në DIN VDE 0298-4 (kushte referuese: izolim PVC, 3 përçues të ngarkuar). Faktori i aluminit është përafrues. Rezultati është orientues — verifikoje gjithmonë me tabelën e plotë VDE 0298-4 dhe VDE 0100-430 përpara zbatimit praktik.</div>
+    <div class="disclaimer">Vereinfachte Berechnung nach DIN VDE 0298-4 (Referenzbedingungen: PVC-Isolierung, 3 belastete Leiter). Der Aluminiumfaktor ist näherungsweise. Das Ergebnis dient zur Orientierung — vor der praktischen Anwendung stets mit der vollständigen Tabelle VDE 0298-4 und VDE 0100-430 prüfen.</div>
   `;
 }
 document.getElementById('calcBtn').addEventListener('click', calcKabel);
@@ -680,13 +680,13 @@ document.getElementById('pdfBtn').addEventListener('click', ()=>{
   try{
     const doc = buildPDF();
     doc.save(pdfFileName());
-    showToast('PDF u shkarkua');
+    showToast('PDF heruntergeladen');
   }catch(e){
-    showToast('PDF nuk u gjenerua — provo sërish');
+    showToast('PDF konnte nicht erstellt werden — bitte erneut versuchen');
   }
 });
 
-/* ---------- Teilen (Web Share API, me fallback) ---------- */
+/* ---------- Teilen (Web Share API, mit Fallback) ---------- */
 document.getElementById('shareBtn').addEventListener('click', async ()=>{
   try{
     const doc = buildPDF();
@@ -703,11 +703,11 @@ document.getElementById('shareBtn').addEventListener('click', async ()=>{
       await navigator.share({ title:'Prüfprotokoll', text: docAsText() });
     } else {
       doc.save(pdfFileName());
-      showToast('Shpërndarja s\'ofrohet — PDF u shkarkua');
+      showToast('Teilen nicht verfügbar — PDF heruntergeladen');
     }
   }catch(e){
     if(e && e.name === 'AbortError') return;
-    showToast('Dërgimi dështoi — provo PDF-in');
+    showToast('Senden fehlgeschlagen — PDF versuchen');
   }
 });
 
@@ -727,14 +727,14 @@ async function refreshPlanUI(){
   const { data } = await sb.from('profiles').select('subscription_status').eq('id', currentUser.id).maybeSingle();
   subscriptionStatus = (data && data.subscription_status) || 'free';
   const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trialing';
-  badge.textContent = isPro ? 'Pro' : 'Falas';
+  badge.textContent = isPro ? 'Pro' : 'Kostenlos';
   badge.className = isPro ? 'pro' : 'free';
   subBtn.hidden = isPro;
 }
 document.getElementById('subscribeBtn').addEventListener('click', async ()=>{
   if(!currentUser) return;
   const btn = document.getElementById('subscribeBtn');
-  btn.disabled = true; btn.textContent = 'Duke hapur…';
+  btn.disabled = true; btn.textContent = 'Wird geöffnet…';
   try{
     const resp = await fetch('/api/create-checkout-session', {
       method:'POST',
@@ -743,17 +743,17 @@ document.getElementById('subscribeBtn').addEventListener('click', async ()=>{
     });
     const data = await resp.json();
     if(data.url){ window.location.href = data.url; }
-    else { showToast('Gabim: ' + (data.error || 'provo përsëri')); btn.disabled=false; btn.textContent='Abonohu — 14,99€/muaj'; }
+    else { showToast('Fehler: ' + (data.error || 'bitte erneut versuchen')); btn.disabled=false; btn.textContent='Abonnieren — 14,99€/Monat'; }
   }catch(e){
-    showToast('Gabim gjatë hapjes së pagesës');
-    btn.disabled=false; btn.textContent='Abonohu — 14,99€/muaj';
+    showToast('Fehler beim Öffnen der Zahlung');
+    btn.disabled=false; btn.textContent='Abonnieren — 14,99€/Monat';
   }
 });
 (function handleCheckoutRedirect(){
   const params = new URLSearchParams(window.location.search);
   const status = params.get('checkout');
-  if(status === 'success'){ showToast('Faleminderit! Abonimi po aktivizohet…'); }
-  else if(status === 'cancel'){ showToast('Pagesa u anulua'); }
+  if(status === 'success'){ showToast('Danke! Das Abo wird aktiviert…'); }
+  else if(status === 'cancel'){ showToast('Zahlung abgebrochen'); }
   if(status){
     const url = new URL(window.location.href);
     url.searchParams.delete('checkout');
@@ -768,16 +768,16 @@ function authMsg(text, kind){
 }
 document.getElementById('authSignupBtn').addEventListener('click', async ()=>{
   const email = val('authEmail'), password = val('authPass');
-  if(!email || password.length < 6){ authMsg('Shkruaj email dhe fjalëkalim (min. 6 shenja).', 'err'); return; }
-  authMsg('Duke u regjistruar…', '');
+  if(!email || password.length < 6){ authMsg('Bitte E-Mail und Passwort (mind. 6 Zeichen) eingeben.', 'err'); return; }
+  authMsg('Registrierung läuft…', '');
   const { error } = await sb.auth.signUp({ email, password });
   if(error){ authMsg(error.message, 'err'); return; }
-  authMsg('U krijua llogaria. Nëse kërkohet, konfirmo emailin, pastaj shtyp "Hyr".', 'ok');
+  authMsg('Konto wurde erstellt. Falls erforderlich, E-Mail bestätigen und dann "Anmelden" drücken.', 'ok');
 });
 document.getElementById('authLoginBtn').addEventListener('click', async ()=>{
   const email = val('authEmail'), password = val('authPass');
-  if(!email || !password){ authMsg('Shkruaj email dhe fjalëkalim.', 'err'); return; }
-  authMsg('Duke hyrë…', '');
+  if(!email || !password){ authMsg('Bitte E-Mail und Passwort eingeben.', 'err'); return; }
+  authMsg('Anmeldung läuft…', '');
   const { error } = await sb.auth.signInWithPassword({ email, password });
   if(error){ authMsg(error.message, 'err'); return; }
 });
@@ -817,7 +817,7 @@ function collectRecord(){
   return data;
 }
 document.getElementById('saveHistBtn').addEventListener('click', async ()=>{
-  if(!currentUser){ showToast('Duhet të jesh i kyçur'); return; }
+  if(!currentUser){ showToast('Bitte anmelden'); return; }
   const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trialing';
   if(!isPro){
     const { count, error: countErr } = await sb
@@ -825,14 +825,14 @@ document.getElementById('saveHistBtn').addEventListener('click', async ()=>{
       .select('id', { count:'exact', head:true })
       .eq('user_id', currentUser.id);
     if(!countErr && typeof count === 'number' && count >= FREE_LIMIT){
-      showToast(`Limiti falas (${FREE_LIMIT}) u arrit — abonohu për ma shumë`);
+      showToast(`Kostenloses Limit (${FREE_LIMIT}) erreicht — jetzt abonnieren`);
       document.getElementById('subscribeBtn').hidden = false;
       return;
     }
   }
   const { error } = await sb.from('protocols').insert(collectRecord());
-  if(error){ showToast('Gabim: s\'u ruajt'); return; }
-  showToast('U ruajt në Verlauf');
+  if(error){ showToast('Fehler: nicht gespeichert'); return; }
+  showToast('Im Verlauf gespeichert');
 });
 function applyRecord(r){
   ['kunde','datum','adresse','pruefer','firma','maengeltxt'].forEach(id=>{
@@ -858,13 +858,13 @@ function applyRecord(r){
 }
 async function renderHistory(){
   const el = document.getElementById('histList');
-  if(!currentUser){ el.innerHTML = '<div class="histempty">Duhet të jesh i kyçur.</div>'; return; }
-  el.innerHTML = '<div class="histempty"><span class="spin"></span>Duke ngarkuar…</div>';
+  if(!currentUser){ el.innerHTML = '<div class="histempty">Bitte anmelden.</div>'; return; }
+  el.innerHTML = '<div class="histempty"><span class="spin"></span>Wird geladen…</div>';
   const { data, error } = await sb.from('protocols').select('*').order('created_at', { ascending:false });
-  if(error){ el.innerHTML = '<div class="histempty">Gabim gjatë ngarkimit.</div>'; return; }
+  if(error){ el.innerHTML = '<div class="histempty">Fehler beim Laden.</div>'; return; }
   historyCache = data || [];
   if(!historyCache.length){
-    el.innerHTML = '<div class="histempty">Ende nuk ke protokolle të ruajtura.<br>Hap "Protokoll-Vorschau" dhe shtyp "Im Verlauf speichern".</div>';
+    el.innerHTML = '<div class="histempty">Noch keine gespeicherten Protokolle.<br>"Protokoll-Vorschau" öffnen und "Im Verlauf speichern" drücken.</div>';
     return;
   }
   el.innerHTML = historyCache.map(r=>{
@@ -875,10 +875,10 @@ async function renderHistory(){
       : '<span class="badge warn">Mängel</span>';
     return `<div class="histcard" data-id="${r.id}">
       <div class="meta">
-        <div class="name">${esc(r.kunde || 'Kunde pa emër')}</div>
+        <div class="name">${esc(r.kunde || 'Kunde ohne Namen')}</div>
         <div class="sub">${esc(r.datum || when)} · ${badge}</div>
       </div>
-      <button class="del" data-del="${r.id}" aria-label="Fshi" title="Fshi">✕</button>
+      <button class="del" data-del="${r.id}" aria-label="Löschen" title="Löschen">✕</button>
     </div>`;
   }).join('');
   el.querySelectorAll('.histcard').forEach(card=>{
@@ -892,10 +892,10 @@ async function renderHistory(){
     btn.addEventListener('click', async (ev)=>{
       ev.stopPropagation();
       const id = btn.dataset.del;
-      if(!confirm('Fshi këtë protokoll nga Verlauf?')) return;
+      if(!confirm('Dieses Protokoll aus dem Verlauf löschen?')) return;
       await sb.from('protocols').delete().eq('id', id);
       renderHistory();
-      showToast('U fshi');
+      showToast('Gelöscht');
     });
   });
 }
