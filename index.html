@@ -163,9 +163,38 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 .histcard .sub{font-size:12px; color:var(--ink-dim); margin-top:2px}
 .histcard .del{flex:none; background:none; border:none; color:var(--warn); font-size:18px; padding:6px; cursor:pointer}
 .histempty{text-align:center; padding:40px 20px; color:var(--ink-dim); font-size:13.5px}
+#authView{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px}
+.authcard{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:26px 22px; width:100%; max-width:380px}
+.authcard h1{font-size:18px; display:flex; align-items:center; gap:10px; margin-bottom:4px}
+.authcard .bolt{width:26px;height:26px}
+.authcard p.sub{font-size:12.5px; color:var(--ink-dim); margin:2px 0 18px}
+.authmsg{font-size:12.5px; border-radius:7px; padding:9px 11px; margin-bottom:12px; display:none}
+.authmsg.show{display:block}
+.authmsg.err{background:var(--warn-bg); color:var(--warn)}
+.authmsg.ok{background:var(--ok-bg); color:var(--ok)}
+.authrow{display:flex; gap:8px; margin-top:10px}
+.authrow .btn{flex:1}
+.userbar{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0 2px; font-size:11.5px; color:var(--ink-dim)}
+.userbar button{background:none; border:none; color:var(--ink-dim); text-decoration:underline; font-size:11.5px; cursor:pointer; padding:4px}
+.spin{display:inline-block; width:13px; height:13px; border:2px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin .7s linear infinite; vertical-align:-2px; margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 
-<div class="wrap">
+<div id="authView">
+  <div class="authcard">
+    <h1><svg class="bolt" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="var(--accent)" stroke="var(--ink)" stroke-width="1" stroke-linejoin="round"/></svg>ElektroProtokoll</h1>
+    <p class="sub">Hyr ose krijo llogari për të ruajtur protokollet në cloud</p>
+    <div class="authmsg" id="authMsg"></div>
+    <div class="field"><label for="authEmail">Email</label><input id="authEmail" type="email" placeholder="emri@firma.de" autocomplete="email"></div>
+    <div class="field"><label for="authPass">Fjalëkalimi</label><input id="authPass" type="password" placeholder="min. 6 shenja" autocomplete="current-password"></div>
+    <div class="authrow">
+      <button class="btn ghost" id="authSignupBtn">Regjistrohu</button>
+      <button class="btn" id="authLoginBtn">Hyr</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="appRoot" hidden>
 
 <header>
   <svg class="bolt" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="var(--accent)" stroke="var(--ink)" stroke-width="1" stroke-linejoin="round"/></svg>
@@ -174,6 +203,7 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
     <p>Erstprüfung nach DIN VDE 0100-600 — Entwurf</p>
   </div>
 </header>
+<div class="userbar"><span id="userEmailLbl"></span><button id="logoutBtn">Dil</button></div>
 
 <nav>
   <button class="tabbtn active" data-tab="eingabe">Eingabe</button>
@@ -327,6 +357,7 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 <div class="toast" id="toast">Kopiert</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const besichtItems = [
   "Schutz gegen elektrischen Schlag (Abdeckungen, IP-Schutz)",
@@ -670,29 +701,68 @@ document.getElementById('shareBtn').addEventListener('click', async ()=>{
   }
 });
 
-/* ---------- Verlauf (histori e protokolleve, localStorage) ---------- */
+/* ---------- Supabase: login + Verlauf (cloud) ---------- */
+const SUPABASE_URL = 'https://qnbfjtjlwsufxdinwyqp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_LtgR712rBlYn2pXD9QT8bg_Szzy8jVa';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+let historyCache = [];
+
+function authMsg(text, kind){
+  const el = document.getElementById('authMsg');
+  el.textContent = text;
+  el.className = 'authmsg show' + (kind ? ' '+kind : '');
+}
+document.getElementById('authSignupBtn').addEventListener('click', async ()=>{
+  const email = val('authEmail'), password = val('authPass');
+  if(!email || password.length < 6){ authMsg('Shkruaj email dhe fjalëkalim (min. 6 shenja).', 'err'); return; }
+  authMsg('Duke u regjistruar…', '');
+  const { error } = await sb.auth.signUp({ email, password });
+  if(error){ authMsg(error.message, 'err'); return; }
+  authMsg('U krijua llogaria. Nëse kërkohet, konfirmo emailin, pastaj shtyp "Hyr".', 'ok');
+});
+document.getElementById('authLoginBtn').addEventListener('click', async ()=>{
+  const email = val('authEmail'), password = val('authPass');
+  if(!email || !password){ authMsg('Shkruaj email dhe fjalëkalim.', 'err'); return; }
+  authMsg('Duke hyrë…', '');
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ authMsg(error.message, 'err'); return; }
+});
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await sb.auth.signOut();
+});
+sb.auth.onAuthStateChange((event, session)=>{
+  currentUser = session ? session.user : null;
+  document.getElementById('authView').hidden = !!currentUser;
+  document.getElementById('appRoot').hidden = !currentUser;
+  if(currentUser){
+    document.getElementById('userEmailLbl').textContent = currentUser.email || '';
+  }
+});
+sb.auth.getSession().then(({ data })=>{
+  currentUser = data.session ? data.session.user : null;
+  document.getElementById('authView').hidden = !!currentUser;
+  document.getElementById('appRoot').hidden = !currentUser;
+  if(currentUser) document.getElementById('userEmailLbl').textContent = currentUser.email || '';
+});
+
 function collectRecord(){
   const data = {
-    id: Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-    savedAt: new Date().toISOString(),
+    user_id: currentUser ? currentUser.id : null,
     art: document.querySelector('input[name="art"]:checked').value,
     ergebnis: document.querySelector('input[name="ergebnis"]:checked').value,
   };
   ['kunde','datum','adresse','pruefer','firma','maengeltxt'].forEach(id=>{ data[id] = val(id); });
-  measDefs.forEach(m=>{ data['m_'+m.id] = val('m_'+m.id); });
+  const measurements = {};
+  measDefs.forEach(m=>{ measurements['m_'+m.id] = val('m_'+m.id); });
+  data.measurements = measurements;
   data.besicht = besichtItems.map((t,i)=>document.getElementById('chk'+i).checked);
   return data;
 }
-function getRecords(){
-  try{ return JSON.parse(localStorage.getItem('pp_records') || '[]'); }catch(e){ return []; }
-}
-function setRecords(list){
-  try{ localStorage.setItem('pp_records', JSON.stringify(list)); }catch(e){}
-}
-document.getElementById('saveHistBtn').addEventListener('click', ()=>{
-  const list = getRecords();
-  list.unshift(collectRecord());
-  setRecords(list);
+document.getElementById('saveHistBtn').addEventListener('click', async ()=>{
+  if(!currentUser){ showToast('Duhet të jesh i kyçur'); return; }
+  const { error } = await sb.from('protocols').insert(collectRecord());
+  if(error){ showToast('Gabim: s\'u ruajt'); return; }
   showToast('U ruajt në Verlauf');
 });
 function applyRecord(r){
@@ -700,9 +770,10 @@ function applyRecord(r){
     const el = document.getElementById(id);
     if(el) el.value = r[id] || '';
   });
+  const measurements = r.measurements || {};
   measDefs.forEach(m=>{
     const el = document.getElementById('m_'+m.id);
-    if(el) el.value = r['m_'+m.id] || '';
+    if(el) el.value = measurements['m_'+m.id] || '';
   });
   if(Array.isArray(r.besicht)){
     r.besicht.forEach((checked,i)=>{
@@ -716,15 +787,19 @@ function applyRecord(r){
   if(ergRadio) ergRadio.checked = true;
   saveDraft();
 }
-function renderHistory(){
-  const list = getRecords();
+async function renderHistory(){
   const el = document.getElementById('histList');
-  if(!list.length){
+  if(!currentUser){ el.innerHTML = '<div class="histempty">Duhet të jesh i kyçur.</div>'; return; }
+  el.innerHTML = '<div class="histempty"><span class="spin"></span>Duke ngarkuar…</div>';
+  const { data, error } = await sb.from('protocols').select('*').order('created_at', { ascending:false });
+  if(error){ el.innerHTML = '<div class="histempty">Gabim gjatë ngarkimit.</div>'; return; }
+  historyCache = data || [];
+  if(!historyCache.length){
     el.innerHTML = '<div class="histempty">Ende nuk ke protokolle të ruajtura.<br>Hap "Protokoll-Vorschau" dhe shtyp "Im Verlauf speichern".</div>';
     return;
   }
-  el.innerHTML = list.map(r=>{
-    const dt = new Date(r.savedAt);
+  el.innerHTML = historyCache.map(r=>{
+    const dt = new Date(r.created_at);
     const when = dt.toLocaleDateString('de-DE') + ' ' + dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
     const badge = r.ergebnis === 'ok'
       ? '<span class="badge ok">Bestanden</span>'
@@ -740,16 +815,16 @@ function renderHistory(){
   el.querySelectorAll('.histcard').forEach(card=>{
     card.addEventListener('click', (ev)=>{
       if(ev.target.closest('[data-del]')) return;
-      const r = getRecords().find(x=>x.id === card.dataset.id);
+      const r = historyCache.find(x=>String(x.id) === card.dataset.id);
       if(r){ applyRecord(r); showTab('vorschau'); }
     });
   });
   el.querySelectorAll('[data-del]').forEach(btn=>{
-    btn.addEventListener('click', (ev)=>{
+    btn.addEventListener('click', async (ev)=>{
       ev.stopPropagation();
       const id = btn.dataset.del;
       if(!confirm('Fshi këtë protokoll nga Verlauf?')) return;
-      setRecords(getRecords().filter(x=>x.id !== id));
+      await sb.from('protocols').delete().eq('id', id);
       renderHistory();
       showToast('U fshi');
     });
