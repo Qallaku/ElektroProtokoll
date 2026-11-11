@@ -1,4 +1,4 @@
-const CACHE_NAME = 'elektroprotokoll-v1';
+const CACHE_NAME = 'elektroprotokoll-v2';
 const ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {

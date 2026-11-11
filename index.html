@@ -153,6 +153,16 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 .resultbig .tile .num{font-family:var(--mono); font-size:19px; font-weight:600; margin-top:3px}
 .notebox{background:var(--warn-bg); color:var(--warn); border-radius:7px; padding:10px 12px; font-size:12px; margin-top:10px; line-height:1.4}
 .disclaimer{font-size:11px; color:var(--ink-dim); margin-top:12px; line-height:1.5; border-top:1px solid var(--line); padding-top:10px}
+.docactions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+.docactions .btn{flex:1; min-width:120px}
+.histlist{display:flex; flex-direction:column; gap:10px}
+.histcard{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer}
+.histcard:active{background:var(--surface-2)}
+.histcard .meta{min-width:0}
+.histcard .name{font-weight:600; font-size:14px}
+.histcard .sub{font-size:12px; color:var(--ink-dim); margin-top:2px}
+.histcard .del{flex:none; background:none; border:none; color:var(--warn); font-size:18px; padding:6px; cursor:pointer}
+.histempty{text-align:center; padding:40px 20px; color:var(--ink-dim); font-size:13.5px}
 </style>
 
 <div class="wrap">
@@ -169,6 +179,7 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
   <button class="tabbtn active" data-tab="eingabe">Eingabe</button>
   <button class="tabbtn" data-tab="vorschau">Protokoll-Vorschau</button>
   <button class="tabbtn" data-tab="kabel">Kabel-Rechner</button>
+  <button class="tabbtn" data-tab="verlauf">Verlauf</button>
 </nav>
 
 <div id="view-eingabe">
@@ -220,10 +231,13 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 
 <div id="view-vorschau" hidden>
   <div class="doc" id="docOut"></div>
-  <footer-nav style="margin-top:14px">
+  <div class="docactions">
     <button class="btn ghost" id="toEdit">Zurück zur Eingabe</button>
-    <button class="btn" id="copyBtn">Als Text kopieren</button>
-  </footer-nav>
+    <button class="btn ghost" id="copyBtn">Als Text kopieren</button>
+    <button class="btn ghost" id="saveHistBtn">Im Verlauf speichern</button>
+    <button class="btn ghost" id="pdfBtn">PDF herunterladen</button>
+    <button class="btn" id="shareBtn">Teilen</button>
+  </div>
 </div>
 
 <div id="view-kabel" hidden>
@@ -304,10 +318,15 @@ footer-nav{display:flex; gap:10px; margin-top:4px}
 
 </div>
 
+<div id="view-verlauf" hidden>
+  <div class="histlist" id="histList"></div>
+</div>
+
 </div>
 
 <div class="toast" id="toast">Kopiert</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const besichtItems = [
   "Schutz gegen elektrischen Schlag (Abdeckungen, IP-Schutz)",
@@ -410,11 +429,12 @@ function docAsText(){
 }
 
 function showTab(tab){
-  ['eingabe','vorschau','kabel'].forEach(t=>{
+  ['eingabe','vorschau','kabel','verlauf'].forEach(t=>{
     document.getElementById('view-'+t).hidden = (t !== tab);
   });
   document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab === tab));
   if(tab === 'vorschau') buildDoc();
+  if(tab === 'verlauf') renderHistory();
   window.scrollTo(0,0);
 }
 document.getElementById('toPreview').addEventListener('click', ()=> showTab('vorschau'));
@@ -530,16 +550,213 @@ document.getElementById('copyBtn').addEventListener('click', async ()=>{
   setTimeout(()=>toast.classList.remove('show'), 1600);
 });
 
-// restore draft from localStorage (per-viewer convenience only)
-try{
-  const saved = JSON.parse(localStorage.getItem('pp_draft') || '{}');
-  Object.keys(saved).forEach(id=>{
-    const el = document.getElementById(id);
-    if(el && el.tagName !== 'INPUT' || (el && el.type !== 'radio' && el.type !== 'checkbox')){
-      if(el) el.value = saved[id];
-    }
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 1800);
+}
+
+/* ---------- Protokoll als PDF ---------- */
+function buildPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const marginX = 16;
+  let y = 18;
+
+  const art = document.querySelector('input[name="art"]:checked').value;
+  const ergebnis = document.querySelector('input[name="ergebnis"]:checked').value;
+  const kunde = val('kunde') || '—', adresse = val('adresse') || '—';
+  const datum = val('datum') || '—', pruefer = val('pruefer') || '—', firma = val('firma') || '—';
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(15);
+  doc.text('Prüfprotokoll', marginX, y); y += 6;
+  doc.setFontSize(10.5); doc.setFont('helvetica','normal');
+  doc.text(`${art} nach DIN VDE 0100-600`, marginX, y); y += 8;
+  doc.setDrawColor(30,30,30); doc.line(marginX, y, pageW-marginX, y); y += 7;
+
+  doc.setFontSize(10);
+  const rows = [['Kunde', kunde],['Datum', datum],['Anlage', adresse],['Prüfer', pruefer],['Firma', firma],['Prüfart', art]];
+  rows.forEach(([k,v])=>{
+    doc.setFont('helvetica','bold'); doc.text(k+':', marginX, y);
+    doc.setFont('helvetica','normal'); doc.text(String(v), marginX+28, y);
+    y += 5.5;
   });
-}catch(e){}
+  y += 3;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11.5);
+  doc.text('Besichtigung', marginX, y); y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  besichtItems.forEach((t,i)=>{
+    const ok = document.getElementById('chk'+i).checked;
+    const lines = doc.splitTextToSize((ok?'[x] ':'[ ] ')+t, pageW-2*marginX);
+    lines.forEach(line=>{ doc.text(line, marginX, y); y += 4.6; });
+  });
+  y += 4;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11.5);
+  doc.text('Erproben & Messen', marginX, y); y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  measDefs.forEach(m=>{
+    const v = val('m_'+m.id) || '—';
+    doc.text(m.label, marginX, y);
+    doc.text(`${v} ${m.unit}`.trim(), pageW-marginX, y, {align:'right'});
+    y += 5.2;
+  });
+  y += 4;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11.5);
+  doc.text('Ergebnis', marginX, y); y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+  doc.setTextColor(ergebnis==='ok' ? 63 : 178, ergebnis==='ok' ? 125 : 59, ergebnis==='ok' ? 85 : 46);
+  doc.text(ergebnis==='ok' ? 'Bestanden' : 'Mängel festgestellt', marginX, y);
+  doc.setTextColor(20,20,20); y += 7;
+
+  const maengel = val('maengeltxt');
+  if(maengel){
+    doc.setFontSize(9.5);
+    const lines = doc.splitTextToSize('Anmerkungen: '+maengel, pageW-2*marginX);
+    lines.forEach(line=>{ doc.text(line, marginX, y); y += 4.6; });
+    y += 3;
+  }
+
+  y = Math.max(y+14, doc.internal.pageSize.getHeight()-30);
+  doc.setDrawColor(30,30,30); doc.line(marginX, y, marginX+70, y);
+  doc.line(pageW-marginX-50, y, pageW-marginX, y);
+  doc.setFontSize(8.5); doc.setTextColor(90,90,90);
+  doc.text('Unterschrift Prüfer', marginX, y+4);
+  doc.text('Ort, Datum', pageW-marginX-50, y+4);
+
+  return doc;
+}
+function pdfFileName(){
+  const kunde = (val('kunde')||'Protokoll').replace(/[^\p{L}\p{N}]+/gu,'_');
+  const datum = val('datum') || new Date().toISOString().slice(0,10);
+  return `Pruefprotokoll_${kunde}_${datum}.pdf`;
+}
+document.getElementById('pdfBtn').addEventListener('click', ()=>{
+  try{
+    const doc = buildPDF();
+    doc.save(pdfFileName());
+    showToast('PDF u shkarkua');
+  }catch(e){
+    showToast('PDF nuk u gjenerua — provo sërish');
+  }
+});
+
+/* ---------- Teilen (Web Share API, me fallback) ---------- */
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  try{
+    const doc = buildPDF();
+    const blob = doc.output('blob');
+    const file = new File([blob], pdfFileName(), {type:'application/pdf'});
+    const kunde = val('kunde') || 'Kunde';
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({
+        files:[file],
+        title:'Prüfprotokoll',
+        text:`Prüfprotokoll — ${kunde}`
+      });
+    } else if(navigator.share){
+      await navigator.share({ title:'Prüfprotokoll', text: docAsText() });
+    } else {
+      doc.save(pdfFileName());
+      showToast('Shpërndarja s\'ofrohet — PDF u shkarkua');
+    }
+  }catch(e){
+    if(e && e.name === 'AbortError') return;
+    showToast('Dërgimi dështoi — provo PDF-in');
+  }
+});
+
+/* ---------- Verlauf (histori e protokolleve, localStorage) ---------- */
+function collectRecord(){
+  const data = {
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+    savedAt: new Date().toISOString(),
+    art: document.querySelector('input[name="art"]:checked').value,
+    ergebnis: document.querySelector('input[name="ergebnis"]:checked').value,
+  };
+  ['kunde','datum','adresse','pruefer','firma','maengeltxt'].forEach(id=>{ data[id] = val(id); });
+  measDefs.forEach(m=>{ data['m_'+m.id] = val('m_'+m.id); });
+  data.besicht = besichtItems.map((t,i)=>document.getElementById('chk'+i).checked);
+  return data;
+}
+function getRecords(){
+  try{ return JSON.parse(localStorage.getItem('pp_records') || '[]'); }catch(e){ return []; }
+}
+function setRecords(list){
+  try{ localStorage.setItem('pp_records', JSON.stringify(list)); }catch(e){}
+}
+document.getElementById('saveHistBtn').addEventListener('click', ()=>{
+  const list = getRecords();
+  list.unshift(collectRecord());
+  setRecords(list);
+  showToast('U ruajt në Verlauf');
+});
+function applyRecord(r){
+  ['kunde','datum','adresse','pruefer','firma','maengeltxt'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = r[id] || '';
+  });
+  measDefs.forEach(m=>{
+    const el = document.getElementById('m_'+m.id);
+    if(el) el.value = r['m_'+m.id] || '';
+  });
+  if(Array.isArray(r.besicht)){
+    r.besicht.forEach((checked,i)=>{
+      const el = document.getElementById('chk'+i);
+      if(el) el.checked = !!checked;
+    });
+  }
+  const artRadio = document.querySelector(`input[name="art"][value="${r.art}"]`);
+  if(artRadio) artRadio.checked = true;
+  const ergRadio = document.querySelector(`input[name="ergebnis"][value="${r.ergebnis}"]`);
+  if(ergRadio) ergRadio.checked = true;
+  saveDraft();
+}
+function renderHistory(){
+  const list = getRecords();
+  const el = document.getElementById('histList');
+  if(!list.length){
+    el.innerHTML = '<div class="histempty">Ende nuk ke protokolle të ruajtura.<br>Hap "Protokoll-Vorschau" dhe shtyp "Im Verlauf speichern".</div>';
+    return;
+  }
+  el.innerHTML = list.map(r=>{
+    const dt = new Date(r.savedAt);
+    const when = dt.toLocaleDateString('de-DE') + ' ' + dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    const badge = r.ergebnis === 'ok'
+      ? '<span class="badge ok">Bestanden</span>'
+      : '<span class="badge warn">Mängel</span>';
+    return `<div class="histcard" data-id="${r.id}">
+      <div class="meta">
+        <div class="name">${esc(r.kunde || 'Kunde pa emër')}</div>
+        <div class="sub">${esc(r.datum || when)} · ${badge}</div>
+      </div>
+      <button class="del" data-del="${r.id}" aria-label="Fshi" title="Fshi">✕</button>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.histcard').forEach(card=>{
+    card.addEventListener('click', (ev)=>{
+      if(ev.target.closest('[data-del]')) return;
+      const r = getRecords().find(x=>x.id === card.dataset.id);
+      if(r){ applyRecord(r); showTab('vorschau'); }
+    });
+  });
+  el.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      const id = btn.dataset.del;
+      if(!confirm('Fshi këtë protokoll nga Verlauf?')) return;
+      setRecords(getRecords().filter(x=>x.id !== id));
+      renderHistory();
+      showToast('U fshi');
+    });
+  });
+}
+
+// restore draft from localStorage (per-viewer convenience only)
 function saveDraft(){
   try{
     const data = {};
