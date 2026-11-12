@@ -12,3 +12,4 @@ module.exports = async (req, res) => {
     SUPABASE_SERVICE_ROLE_KEY: supabaseKey ? { prefix: supabaseKey.slice(0, 8), length: supabaseKey.length } : null,
   });
 };
+// trigger redeploy 1794476751
