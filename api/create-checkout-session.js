@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Server is missing Stripe configuration' });
     }
 
-    const origin = req.headers.origin || process.env.PUBLIC_URL || 'https://elektroprotokoll.vercel.app';
+    const origin = req.headers.origin || process.env.PUBLIC_URL || 'https://elektroprotokoll-9zkd.vercel.app';
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -30,7 +30,10 @@ module.exports = async (req, res) => {
       customer_email: email,
       client_reference_id: userId,
       metadata: { userId },
-      subscription_data: { metadata: { userId } },
+      subscription_data: {
+        metadata: { userId },
+        trial_period_days: 1,
+      },
       success_url: `${origin}/?checkout=success`,
       cancel_url: `${origin}/?checkout=cancel`,
     });
