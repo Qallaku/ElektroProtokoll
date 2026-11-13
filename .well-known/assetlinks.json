@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.vercel.elektroprotokoll_9zkd.twa",
+    "sha256_cert_fingerprints": ["A9:5D:4E:7B:CE:83:18:98:DA:3C:45:50:4E:66:F5:DC:50:97:CE:6B:64:98:52:30:4A:6E:50:83:96:72:06:B1"]
+  }
+}]
